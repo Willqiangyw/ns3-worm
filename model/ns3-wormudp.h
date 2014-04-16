@@ -33,7 +33,7 @@ public:
 
 private:
   ns3::UdpSocketImpl* udp;
-  ns3::Timer         timer;
+//  ns3::Timer         timer;
 //  TimerEvent*   timeoutevent;
 
   static Count_t scanrate;
@@ -45,7 +45,7 @@ private:
 //  // the following method is called when packets are received from the port
   virtual void Receive(ns3::Packet *, ns3::IpL4Protocol *, Seq_t); // Data received
 
-  void Timeout(/*TimerEvent **/);  // Timer Handler
+  void Timeout()/*TimerEvent **/;  // Timer Handler
 
   virtual void StartApp();    // Called at time specified by Start
   virtual void StopApp();     // Called at time specified by Stop

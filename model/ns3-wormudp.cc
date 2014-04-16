@@ -1,5 +1,6 @@
 
 #include "ns3-wormudp.h"
+#include "ns3/udp-socket-impl.h"
 
 #ifdef HAVE_QT
 #include <qnamespace.h>
@@ -33,7 +34,7 @@ void WormUDP::StartApp()    // Called at time specified by Start
 void WormUDP::StopApp()     // Called at time specified by Stop
 {
   Worm::StopApp();
-  timer.Cancel();
+//  timer.Cancel();
 //  if (timeoutevent) timer.Cancel(timeoutevent);
 }
 
@@ -41,10 +42,19 @@ void WormUDP::AttachNode(ns3::Node* n)
 {
   Worm::AttachNode(n);
 
+//  ns3::TypeId tid = ns3::TypeId::LookupByName ("ns3::UdpSocketFactory");
+//  ns3::Ptr<ns3::Socket> socket = ns3::Socket::CreateSocket (n, tid);
+//  ns3::InetSocketAddress local = ns3::InetSocketAddress (ns3::Ipv4Address::GetAny (), infectionport);
+//  socket->Bind (local);
+
+//  socket->SetRecvCallback (ns3::MakeCallback (&WormUDP::Activate, socket));
   udp = new ns3::UdpSocketImpl;
+  udp->SetNode(n);
+
+  // udp = new ns3::UdpSocketImpl;
 //  udp = new UDP(n);
 
-  udp->SetNode(n);
+  // udp->SetNode(n);
 //  udp->Attach(n);
 //  udp->Bind(infectionport);
 //  udp->AttachApplication(this);
@@ -90,7 +100,7 @@ void WormUDP::Initialize()
 
 void WormUDP::SendWorm()
 {
-  // IPAddr_t target = GenerateNextIPAddress();
+  IPAddr_t target = GenerateNextIPAddress();
 
   ns3::Ptr<ns3::Ipv4> ipv4 = node->GetObject<ns3::Ipv4>();
   ns3::Ipv4InterfaceAddress iaddr = ipv4->GetAddress (1,0);
@@ -100,6 +110,9 @@ void WormUDP::SendWorm()
 //            << (std::string)ns3::Ipv4Address(target)
             << std::endl;
 
+  udp->Bind(target);
+  ns3::Ptr<ns3::Packet> packet = new ns3::Packet(payloadlength);
+  udp->SendTo(packet, (uint32_t)0, target);
 //  udp->SendTo(payloadlength, target, infectionport);
 }
 
@@ -125,6 +138,11 @@ void WormUDP::Receive(ns3::Packet *p, ns3::IpL4Protocol *proto, Seq_t)
    delete p;
 }
 
+void func()
+{
+
+}
+
 void WormUDP::ScheduleNextPacket()
 {
   if(patchable)
@@ -136,11 +154,11 @@ void WormUDP::ScheduleNextPacket()
     }
 
 //  if (!timeoutevent) timeoutevent = new TimerEvent();
-  timer.Schedule(ns3::Time(1.0 / (double)scanrate));
+  ns3::Simulator::Schedule (ns3::Time(1.0 / (double)scanrate), &WormUDP::Timeout, this);
 //  timer.Schedule(timeoutevent, 1.0 / (double)scanrate, this);
 }
 
-void WormUDP::Timeout(/*TimerEvent *ev*/)
+void WormUDP::Timeout()/*TimerEvent *ev*/
 {
   if (!node)
     {

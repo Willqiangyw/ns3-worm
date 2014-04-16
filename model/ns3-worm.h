@@ -9,9 +9,9 @@
 // Typedefs from GTNets
 typedef unsigned long Size_t;
 typedef unsigned long Count_t;
-typedef unsigned long PortId_t;
+typedef uint16_t PortId_t;
 typedef unsigned long Seq_t;
-typedef uint32_t IPAddr_t; //typedef unsigned long IPAddr_t;
+typedef ns3::Ipv4Address IPAddr_t; //typedef unsigned long IPAddr_t;
 typedef double Time_t;
 
 /**
@@ -26,6 +26,10 @@ public:
      */
     Worm();
 
+    /**
+     * \brief Sets the node that the worm is attached to, increments its
+     * total instances and gets and updates its vulnerablility value
+     */
     virtual void AttachNode(ns3::Node*); // Note which node attached to
     virtual ~Worm() {};
     virtual ns3::Application* Copy() const;// Make a copy of the application

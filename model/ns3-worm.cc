@@ -11,7 +11,7 @@ PortId_t Worm::infectionport = 1434;
 // for making host's vulnerability be selected randomly
 double   Worm::vulnerability = 1.0;
 
-IPAddr_t Worm::baseIP = ns3::Ipv4Address("192.168.0.0").Get();
+IPAddr_t Worm::baseIP = ns3::Ipv4Address("192.168.0.0");
 
 Count_t  Worm::totalinfected = 0;
 Count_t  Worm::totalvulnerable = 0;
@@ -137,7 +137,7 @@ IPAddr_t Worm::GenerateNextIPAddress()
 {
   // randomx = randomx * 214013 + 0xffd9613c;
   // I am not following the random number generator of the Slammer worm
-  IPAddr_t IP = 2.3;
+  IPAddr_t IP = "2.3";
   std::cout << "Generating next IP address" << std::endl;
 
 //  if (!targetV){
