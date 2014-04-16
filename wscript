@@ -11,7 +11,9 @@ def build(bld):
     module.source = [
         'model/ns3-worm.cc',
         'model/ns3-wormudp.cc',
+        # 'model/ns3-wormtcp.cc',
         'helper/ns3-worm-helper.cc',
+        # 'model/ns3-wormtargetvector.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('ns3-worm')
@@ -24,7 +26,9 @@ def build(bld):
     headers.source = [
         'model/ns3-worm.h',
         'model/ns3-wormudp.h',
+        # 'model/ns3-wormtcp.h',
         'helper/ns3-worm-helper.h',
+        # 'helper/ns3-wormtargetvector.h',
         ]
 
     if bld.env.ENABLE_EXAMPLES:
