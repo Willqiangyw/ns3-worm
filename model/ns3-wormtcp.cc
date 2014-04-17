@@ -85,7 +85,7 @@ void WormTCP::Activate()
     ns3::Ptr<ns3::Ipv4> ipv4 = node->GetObject<ns3::Ipv4>();
     ns3::Ipv4InterfaceAddress iaddr = ipv4->GetAddress (1,0);
     ns3::Ipv4Address addri = iaddr.GetLocal ();
-  if(_debug) cout<<"StartInfection["<<iaddr/*(node->GetIPAddr())*/<<
+  if(_debug) cout<<"StartInfection["<<addri/*(node->GetIPAddr())*/<<
        "]: Infected machine."<<endl;
   // Set the node to red on animation
 #ifdef HAVE_QT

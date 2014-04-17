@@ -32,12 +32,12 @@ public:
 
 
 private:
-  bool _debug;
+
   ns3::UdpSocketImpl* udp;
 //  ns3::Timer         timer;
 //  TimerEvent*   timeoutevent;
-
   static Count_t scanrate;
+  bool _debug;
 
   void SendWorm();
 

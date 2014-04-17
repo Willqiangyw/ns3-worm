@@ -36,13 +36,13 @@ public:
   virtual void Activate();
 
 private:
-  bool _debug;
+
   ns3::TcpSocketBase* tcp; //TCP*                  tcp;           // this one is used for the server side
   std::vector <ns3::TcpSocketBase*> tcp_c;//std::vector <TCP*>    tcp_c;         // the client side protocols
   std::map <ns3::TcpSocketBase*, int> tcp_c_map; //std::map <TCP*,int>   tcp_c_map;     // client side protocol mapping to know how much data ack'd
   std::map <ns3::TcpSocketBase*,Count_t>   tcp_r_count; //std::map <TCP*,Count_t>   tcp_r_count;     // server side protocol mapping to know how much data has been received
   std::map <ns3::TcpSocketBase*,bool>  tcp_r_isworm;//std::map <TCP*,bool>  tcp_r_isworm;    // server side protocol mapping to know store if packets that are coming is a worm
-
+  bool _debug;
   std::vector <Count_t> sentAck;
 
   static ns3::RandomVariable* rngD; //static Random* rngD;   // for adding some transmission delay
