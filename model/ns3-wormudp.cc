@@ -14,8 +14,8 @@ Count_t  WormUDP::scanrate = 50;
 
 // Constructors
 
-WormUDP::WormUDP()
-  : udp(NULL)/*, timeoutevent(NULL)*/
+WormUDP::WormUDP(bool debug)
+  : udp(NULL), _debug(debug)/*, timeoutevent(NULL)*/
 {
 
 }
@@ -58,7 +58,7 @@ void WormUDP::AttachNode(ns3::Node* n)
 //  udp->Attach(n);
 //  udp->Bind(infectionport);
 //  udp->AttachApplication(this);
-//  std::cout << "udp " << udp << " , attach App " << this << std::endl;
+//  if(_debug) std::cout << "udp " << udp << " , attach App " << this << std::endl;
 }
 
 ns3::Application* WormUDP::Copy() const
@@ -72,8 +72,8 @@ void WormUDP::Activate()
   ns3::Ptr<ns3::Ipv4> ipv4 = node->GetObject<ns3::Ipv4>();
   ns3::Ipv4InterfaceAddress iaddr = ipv4->GetAddress (1,0);
   ns3::Ipv4Address addri = iaddr.GetLocal ();
-  std::cout << "Infected machine:" << addri/*IPAddr::ToDotted(node->GetIPAddr())*/ << std::endl;
-  std::cout << " Now starting timer event" << std::endl;
+  if(_debug) std::cout << "Infected machine:" << addri/*IPAddr::ToDotted(node->GetIPAddr())*/ << std::endl;
+  if(_debug) std::cout << " Now starting timer event" << std::endl;
   // Set the node to red on animation
 #ifdef HAVE_QT
   node->Color(Qt::red);
@@ -105,14 +105,15 @@ void WormUDP::SendWorm()
   ns3::Ptr<ns3::Ipv4> ipv4 = node->GetObject<ns3::Ipv4>();
   ns3::Ipv4InterfaceAddress iaddr = ipv4->GetAddress (1,0);
   ns3::Ipv4Address addri = iaddr.GetLocal ();
-  std::cout << "SendWorm[" << addri
+  if(_debug) std::cout << "SendWorm[" << addri
             << "]: Sending worm packet to "
 //            << (std::string)ns3::Ipv4Address(target)
             << std::endl;
 
-  udp->Bind(target);
+  // Specify target ip and port, create properly size packet and send it
+  ns3::InetSocketAddress inetAddress(target, infectionport);
   ns3::Ptr<ns3::Packet> packet = new ns3::Packet(payloadlength);
-  udp->SendTo(packet, (uint32_t)0, target);
+  udp->SendTo(packet, (uint32_t)0, inetAddress);
 //  udp->SendTo(payloadlength, target, infectionport);
 }
 
@@ -126,7 +127,7 @@ void WormUDP::Receive(ns3::Packet *p, ns3::IpL4Protocol *proto, Seq_t)
    ns3::Ptr<ns3::Ipv4> ipv4 = node->GetObject<ns3::Ipv4>();
    ns3::Ipv4InterfaceAddress iaddr = ipv4->GetAddress (1,0);
    ns3::Ipv4Address addri = iaddr.GetLocal ();
-   std::cout << "Receive[" << addri/*(string)IPAddr(node->GetIPAddr())*/
+   if(_debug) std::cout << "Receive[" << addri/*(string)IPAddr(node->GetIPAddr())*/
              << "]: Received TCP packet of size " << p->GetSize()
              << std::endl;
    
@@ -162,11 +163,11 @@ void WormUDP::Timeout()/*TimerEvent *ev*/
 {
   if (!node)
     {
-      std::cout << "WormUDP::Timeout with no attached node " << std::endl;
+      if(_debug) std::cout << "WormUDP::Timeout with no attached node " << std::endl;
       return;
     }
 
-  std::cout << "WormUDPWorm::Timeout " << ns3::Simulator::Now().GetDouble() << std::endl;
+  if(_debug) std::cout << "WormUDPWorm::Timeout " << ns3::Simulator::Now().GetDouble() << std::endl;
 
   // Sending the worm packet
   SendWorm();

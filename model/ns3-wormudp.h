@@ -16,7 +16,7 @@ class WormUDP : public Worm/*, public TimerHandler*/ {
 public:
   // Define a number of constructors for different needs
   //Doc:Method
-  WormUDP();   // Just specify endpoint
+  WormUDP(bool debug);   // Just specify endpoint
     //Doc:Desc Specifies a node to attach the worm application to. 
 
   virtual void AttachNode(ns3::Node*); // Note which node attached to
@@ -32,6 +32,7 @@ public:
 
 
 private:
+  bool _debug;
   ns3::UdpSocketImpl* udp;
 //  ns3::Timer         timer;
 //  TimerEvent*   timeoutevent;
