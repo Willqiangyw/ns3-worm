@@ -54,7 +54,7 @@ link_libraries(ns3-aodv                   ns3-applications
 #file(GLOB sim "worm/*.cc" "worms/*.h")
 #add_library(sims ${sim})
 
-file(GLOB simulations "model/ns3*.cc" "model/ns3*.h")
+file(GLOB simulations "model/ns3-worm.cc" "model/ns3-worm.h")
 list(SORT simulations)
 message(STATUS "Files: ${simulations}")
 add_library(worm ${simulations})

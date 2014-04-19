@@ -10,9 +10,7 @@ def build(bld):
     module = bld.create_ns3_module('ns3-worm', ['core', 'internet'])
     module.source = [
         'model/ns3-worm.cc',
-        'model/ns3-wormudp.cc',
-        'model/ns3-wormtcp.cc',
-        'helper/ns3-worm-helper.cc',
+        # 'helper/ns3-worm-helper.cc',
         # 'model/ns3_wormtargetvector.cc',
         ]
 
@@ -25,9 +23,7 @@ def build(bld):
     headers.module = 'ns3-worm'
     headers.source = [
         'model/ns3-worm.h',
-        'model/ns3-wormudp.h',
-        'model/ns3-wormtcp.h',
-        'helper/ns3-worm-helper.h',
+        # 'helper/ns3-worm-helper.h',
         # 'model/ns3_wormtargetvector.h',
         ]
 
