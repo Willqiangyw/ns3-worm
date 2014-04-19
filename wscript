@@ -7,17 +7,17 @@
 #     conf.check_nonfatal(header_name='stdint.h', define_name='HAVE_STDINT_H')
 
 def build(bld):
-    module = bld.create_ns3_module('ns3-worm', ['core', 'internet'])
+    module = bld.create_ns3_module('ns3-worm', ['core', 'internet', 'config-store', 'stats'])
     module.source = [
         'model/ns3-worm.cc',
         # 'helper/ns3-worm-helper.cc',
         # 'model/ns3_wormtargetvector.cc',
         ]
 
-    module_test = bld.create_ns3_module_test_library('ns3-worm')
-    module_test.source = [
-        'test/ns3-worm-test-suite.cc',
-        ]
+    # module_test = bld.create_ns3_module_test_library('ns3-worm')
+    # module_test.source = [
+    #     'test/ns3-worm-test-suite.cc',
+    #     ]
 
     headers = bld(features='ns3header')
     headers.module = 'ns3-worm'

@@ -54,11 +54,14 @@ link_libraries(ns3-aodv                   ns3-applications
 #file(GLOB sim "worm/*.cc" "worms/*.h")
 #add_library(sims ${sim})
 
-file(GLOB simulations "model/ns3-worm.cc" "model/ns3-worm.h")
+file(GLOB simulations "model/ns3-worm.cc" "model/ns3-worm.h" "helper/ns3-worm-helper.*")
 list(SORT simulations)
 message(STATUS "Files: ${simulations}")
 add_library(worm ${simulations})
-target_link_libraries(worm NS3_LIBRARIES)
+#target_link_libraries(worm ${NS3_LIBRARIES})
+
+add_executable(wormsim "examples/ns3-wormsim.cc")
+target_link_libraries(wormsim ${worm})
 
 #message(STATUS "\n -- SIMULATION: ")
 #add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
