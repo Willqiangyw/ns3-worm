@@ -39,13 +39,16 @@ public:
     void SetName(std::string name);
     void SetTotalNodes (uint32_t totalNodes);
     void SetExistNodes (uint32_t existNodes);
+    static uint32_t GetTotalNodes ();
+    static uint32_t GetExistNodes ();
+    static uint32_t GetInfectedNodes ();
 
 protected:
     void DoDispose (void);
 
     static uint32_t m_totalInfected;
-    uint32_t m_totalNodes;
-    uint32_t m_existNodes;
+    static uint32_t m_totalNodes;
+    static uint32_t m_existNodes;
 
     bool m_infected;
     bool m_vulnerable;

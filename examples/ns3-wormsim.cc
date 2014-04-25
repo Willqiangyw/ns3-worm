@@ -27,6 +27,7 @@
 #include <sys/time.h>
 #include <vector>
 #include <time.h>
+#include <iomanip>
 
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
@@ -248,6 +249,7 @@ int main(int argc, char* argv[])
   UniformVariable uv_time(0.0, 1.0);
   next = 0;
   uint32_t lastFanout = iFanout2.size();
+  uint32_t numVulnerableNodes = 0;
   for (uint32_t i = 0; i < fanout2Nodes.size(); ++i)
     {
       for (uint32_t j = 0; j < fanout2Nodes[i].GetN(); j++)
@@ -270,10 +272,13 @@ int main(int argc, char* argv[])
 
           Ptr<Worm> wormApp = CreateObject<Worm> ();
           wormApp->SetTotalNodes (nt*nf1*nf2);
-          wormApp->SetExistNodes (lastFanout);
+//          wormApp->SetExistNodes (lastFanout);
 
-          if (uv.GetValue(0.0, 1.0) <= vulnerability)
+          if (uv.GetValue(0.0, 1.0) <= vulnerability) {
             wormApp->SetVulnerable (true);
+            numVulnerableNodes++;
+          }
+          wormApp->SetExistNodes(numVulnerableNodes);
 
           if (next + j == 0) 
             wormApp->SetInfected (true);
@@ -290,15 +295,32 @@ int main(int argc, char* argv[])
       next += fanout2Nodes[i].GetN();
     }
 
+//  std::cerr << "Num Vulnerable Nodes: " << numVulnerableNodes
+//            << "/" << nt*nf1*nf2*treelegprob*treelegprob
+//            << " = " << (double)numVulnerableNodes/treelegprob/treelegprob/(double)(nt*nf1*nf2)*100.0 << "%"
+//            << std::endl;
+
   // Flow Monitor
   //Ptr<FlowMonitor> flowmon;
   //FlowMonitorHelper flowmonHelper;
   //flowmon = flowmonHelper.InstallAll ();
 
-  //Simulator::Stop(Seconds(simtime));
+//  Simulator::Stop(Seconds(2));
   Simulator::Run();
 
-  cout << Simulator::Now() << endl;
+  double percInfected = 100.*(double)Worm::GetInfectedNodes() / Worm::GetTotalNodes()/treelegprob/treelegprob;
+  double percVulnerable = (double)numVulnerableNodes/treelegprob/treelegprob/(double)(nt*nf1*nf2)*100.0;
+  double percInfToVuln = percInfected / percVulnerable;
+  cerr << "Time(s)\tInf(#)\tTot(#)\tPerc(%)\tVuln(%)\tInf/Vul(%)" << std::endl;
+  cerr << setprecision(3) << Simulator::Now().GetSeconds() << "\t"
+       << Worm::GetInfectedNodes() << "\t"
+       << (uint32_t)(Worm::GetTotalNodes()*treelegprob*treelegprob) << "\t"
+       << setprecision(4) << percInfected << "\t"
+       << setprecision(4) << percVulnerable << "\t"
+       << setprecision(4) << percInfToVuln*100. << "\t"
+       << std::endl;
+
+
 
   //flowmon->SerializeToXmlFile ("p4.flowmon", false, false);
 

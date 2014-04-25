@@ -28,6 +28,8 @@ NS_LOG_COMPONENT_DEFINE ("ns3-worm");
 ns3::UniformVariable Worm::x = ns3::UniformVariable(1.000,33.999);
 ns3::UniformVariable Worm::y = ns3::UniformVariable(1.000,255.999);
 uint32_t Worm::m_totalInfected = 1;
+uint32_t Worm::m_existNodes = 0;
+uint32_t Worm::m_totalNodes = 0;
 
 ns3::TypeId Worm::GetTypeId(void)
 {
@@ -120,6 +122,21 @@ void Worm::SetTotalNodes (uint32_t totalNodes)
 void Worm::SetExistNodes (uint32_t existNodes)
 {
     m_existNodes = existNodes;
+}
+
+uint32_t Worm::GetTotalNodes ()
+{
+    return m_totalNodes;
+}
+
+uint32_t Worm::GetExistNodes ()
+{
+    return m_existNodes;
+}
+
+uint32_t Worm::GetInfectedNodes ()
+{
+    return m_totalInfected;
 }
 
 void Worm::SetUp(std::string protocol, uint32_t infectionPort)
@@ -310,7 +327,7 @@ void Worm::Listen(ns3::Ptr<ns3::Socket> socket)
 void Worm::StartInfectingNodes()
 {
     // OnOff socket
-    m_onoffSocket = ns3::Socket::CreateSocket (GetNode (), m_typeId);   
+    m_onoffSocket = ns3::Socket::CreateSocket (GetNode (), m_typeId);
     NS_ASSERT (m_onoffSocket != 0);
     m_onoffSocket->Bind();
 
