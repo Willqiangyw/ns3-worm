@@ -28,6 +28,7 @@
 #include <vector>
 #include <time.h>
 #include <iomanip>
+#include <assert.h>
 
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
@@ -54,17 +55,18 @@
 #define TREELEGPROB  0.85
 
 #define LINKBW       "1Mbps"
-#define HLINKBW      "2Mbps"
-#define BLINKBW      "5Mbps"
+#define HLINKBW      "10Mbps"
+#define BLINKBW      "100Mbps"
 
 // ------------ Worm parameters -----------------------
 #define VULNERABILITY  1.0
 #define SCANRATE       100
 #define SCANRANGE      0
 #define PAYLOAD        1000
+#define NUMCONN        1
 
 // ----------- Simulation settings -------------------
-#define SIMTIME        10.0
+#define SIMTIME        0.0
 #define SEEDVALUE      1
 
 using namespace ns3;
@@ -82,16 +84,18 @@ int main(int argc, char* argv[])
   uint32_t scanrate = SCANRATE;
   uint32_t payload = PAYLOAD;
   uint32_t seedValue = SEEDVALUE;
+  uint32_t numConn = NUMCONN;
   double vulnerability = VULNERABILITY;
   double treelegprob = TREELEGPROB;
   double simtime = SIMTIME;
   bool logTop = 0;
+  std::string dataFileName = "p4.data";
 
   CommandLine cmd;
   cmd.AddValue ("wormtype",      "Type of worm: UDP or TCP",     wormtype);
   cmd.AddValue ("trees",         "Number of trees",              nt);
   cmd.AddValue ("fanout1",       "First fanout of trees",        nf1);
-  cmd.AddValue ("fanout1",       "Second fanout of trees",       nf2);
+  cmd.AddValue ("fanout2",       "Second fanout of trees",       nf2);
   cmd.AddValue ("linkbw",        "Link bandwidth",               linkbw);
   cmd.AddValue ("hlinkbw",       "HLink bandwidth",              hlinkbw);
   cmd.AddValue ("blinkbw",       "BLink bandwidth",              blinkbw);
@@ -99,9 +103,11 @@ int main(int argc, char* argv[])
   cmd.AddValue ("payload",       "Payload",                      payload);
   cmd.AddValue ("seedvalue",     "Seed value for RNG",           seedValue);
   cmd.AddValue ("vulnerability", "Vulnerability to infection",   vulnerability);
+  cmd.AddValue ("numConn",       "Number of TCP connections",    numConn);
   cmd.AddValue ("treelegprob",   "Probability of tree legs",     treelegprob);
   cmd.AddValue ("simtime",       "Simulator time in seconds",    simtime);
   cmd.AddValue ("logTop",        "Display the topology stats",   logTop);
+  cmd.AddValue ("filename",      "Name of output file",          dataFileName);
 
   cmd.Parse (argc,argv);
 
@@ -247,9 +253,16 @@ int main(int argc, char* argv[])
   ApplicationContainer serverApps;
   ApplicationContainer wormApps;
   UniformVariable uv_time(0.0, 1.0);
-  next = 0;
   uint32_t lastFanout = iFanout2.size();
   uint32_t numVulnerableNodes = 0;
+  next = 0;
+
+  Worm::SetX (1 + nt*nf1);
+  Worm::SetY (nf1*nf2);
+  Worm::SetTotalNodes (nt*nf1*nf2);
+  Worm::SetNumConn(numConn);
+  Worm::SetPacketSize(payload);
+
   for (uint32_t i = 0; i < fanout2Nodes.size(); ++i)
     {
       for (uint32_t j = 0; j < fanout2Nodes[i].GetN(); j++)
@@ -271,17 +284,16 @@ int main(int argc, char* argv[])
           clientApp.Start (Seconds (uv_time.GetValue()));
 
           Ptr<Worm> wormApp = CreateObject<Worm> ();
-          wormApp->SetTotalNodes (nt*nf1*nf2);
-//          wormApp->SetExistNodes (lastFanout);
+          wormApp->SetMaxBytes(50000);
 
           if (uv.GetValue(0.0, 1.0) <= vulnerability) {
             wormApp->SetVulnerable (true);
             numVulnerableNodes++;
           }
-          wormApp->SetExistNodes(numVulnerableNodes);
 
-          if (next + j == 0) 
+          if (next + j == 0) {
             wormApp->SetInfected (true);
+          }
 
           wormApp->SetStartTime (Seconds (0.0));
           wormApp->SetStopTime (Seconds (simtime));
@@ -295,30 +307,64 @@ int main(int argc, char* argv[])
       next += fanout2Nodes[i].GetN();
     }
 
-//  std::cerr << "Num Vulnerable Nodes: " << numVulnerableNodes
-//            << "/" << nt*nf1*nf2*treelegprob*treelegprob
-//            << " = " << (double)numVulnerableNodes/treelegprob/treelegprob/(double)(nt*nf1*nf2)*100.0 << "%"
-//            << std::endl;
+  Worm::SetExistNodes(numVulnerableNodes);
 
   // Flow Monitor
   //Ptr<FlowMonitor> flowmon;
   //FlowMonitorHelper flowmonHelper;
   //flowmon = flowmonHelper.InstallAll ();
 
-//  Simulator::Stop(Seconds(2));
+  for (int i = 0; i < 5000; ++i) {
+      ns3::Simulator::Schedule(ns3::Seconds((double)i*.1), &Worm::SetNumInfected);
+  }
+
+  if (simtime != 0)
+    Simulator::Stop(Seconds(simtime));
   Simulator::Run();
 
-  double percInfected = 100.*(double)Worm::GetInfectedNodes() / Worm::GetTotalNodes()/treelegprob/treelegprob;
-  double percVulnerable = (double)numVulnerableNodes/treelegprob/treelegprob/(double)(nt*nf1*nf2)*100.0;
+  double percInfected = 100.*(double)Worm::GetInfectedNodes() / (double)lastFanout;
+  double percVulnerable = 100.*(double)numVulnerableNodes/(double)lastFanout;
   double percInfToVuln = percInfected / percVulnerable;
-  cerr << "Time(s)\tInf(#)\tTot(#)\tPerc(%)\tVuln(%)\tInf/Vul(%)" << std::endl;
+  cerr << "Time(s)\tInf(#)\tTot(#)\tConn(#)\tPerc(%)\tVuln(%)\tInf/Vul(%)" << std::endl;
   cerr << setprecision(3) << Simulator::Now().GetSeconds() << "\t"
        << Worm::GetInfectedNodes() << "\t"
-       << (uint32_t)(Worm::GetTotalNodes()*treelegprob*treelegprob) << "\t"
+       << lastFanout << "\t"
+       << Worm::GetNumConn() << "\t"
        << setprecision(4) << percInfected << "\t"
        << setprecision(4) << percVulnerable << "\t"
        << setprecision(4) << percInfToVuln*100. << "\t"
        << std::endl;
+
+
+  std::vector<int> infectionArray = Worm::GetInfectionArray();
+  for (int i = 0; i < 5; ++i) {
+    infectionArray.push_back(Worm::GetInfectedNodes());
+  }
+
+  //-------------------------
+  //    WRITE DATA TO FILE
+  //-------------------------
+  //"#Nodes %Vul %Inf #inf #Conn Time"
+  // Write results to data file
+  std::ofstream dataFile;
+  dataFile.open(dataFileName.c_str(), std::fstream::out | std::fstream::app);
+  assert(dataFile.is_open());
+  dataFile << "0.0" << "\t"
+           << Worm::GetInfectedNodes() << "\t"
+           << lastFanout << "\t"
+           << percVulnerable << "\t"
+           << percInfected << "\t"
+           << Worm::GetNumConn() << "\t"
+           << payload << "\t"
+           << "\n";
+  for (size_t i = 0; i < infectionArray.size(); ++i) {
+      dataFile << (float)i*0.1 << "\t"
+               << infectionArray.at(i) << "\t"
+               << "\n";
+  }
+  dataFile  << "\n";
+  dataFile.close();
+
 
 
 
